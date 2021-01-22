@@ -9,7 +9,7 @@ const Schema = mongoose.Schema; // Создание схемы
 mongoose.connect(process.env.URL, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
 // Клавиатура
-const MainKeyBoard = Markup.keyboard([[Markup.button('Деревня ', 'primary')],[Markup.button('Магазин', 'primary')],Markup.button('Лагерь', 'primary')])
+const MainKeyBoard = Markup.keyboard([[Markup.button('Деревня', 'primary'),],[Markup.button('Лагерь', 'primary'),Markup.button('Магазин', 'primary'),],]),
 
 // установка схем
 // Схема пользователя
@@ -100,7 +100,7 @@ bot.command('деревня', async (ctx) => {
 
     // Клавиатура для бота
     let TrueKeyBoard = null;
-    //if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
+    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
 
     if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
     {
@@ -109,7 +109,7 @@ bot.command('деревня', async (ctx) => {
         else return true;
     }
     const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
-    let messageKings;
+    let messageKings = "";
     if(user.KingGoblin)
         messageKings += `🧝 Король гоблинов: ${user.KingGoblin} уровень.\n- Здоровье короля: ${user.KingGoblinHealth}/${user.KingGoblin*50}`;
     if(user.TheKeeper)
@@ -119,12 +119,10 @@ bot.command('деревня', async (ctx) => {
     💰 Состояние хранилища: ${user.Gold} золота.\n\
     - Уровень хранилища ${user.Repository}\n\n\
     💂 Стражей деревни: ${user.Guardian} людей.\n\
-     ♥ Здоровье стражей: ${user.GuardianHealth}/${user.TownHall*20} HP\n\
-     🛡 Пушки: ${user.Cannons}/${user.TownHall*2}
-    - Уровень пушек: ${user.CannonsLevel}\n\
-    🏹 Башня с лучниками: ${user.Tower}/${user.TownHall*3}\n\
-    - Уровень башни: ${user.TowerLevel}\n\
-    ${messageKings}`, null, TrueKeyBoard)
+    ♥ Здоровье стражей: ${user.GuardianHealth}/${user.TownHall*20} HP\n\
+    🛡 Пушки: ${user.Cannons}/${user.TownHall*2} | Уровень: ${user.CannonsLevel}
+    🏹 Башня с лучниками: ${user.Tower}/${user.TownHall*3} | Уровень: ${user.TowerLevel}\n\
+    ${messageKings}`, null, TrueKeyBoard);
 });
 // Отслеживание всех сообщений
 bot.event('message_new', async (ctx) => {
