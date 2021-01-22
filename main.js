@@ -9,7 +9,7 @@ const Schema = mongoose.Schema; // Создание схемы
 mongoose.connect(process.env.URL, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
 // Клавиатура
-const MainKeyBoard = Markup.keyboard([[Markup.button('Деревня', 'primary'),],[Markup.button('Лагерь', 'primary'),Markup.button('Магазин', 'primary'),],]),
+const MainKeyBoard = Markup.keyboard([[Markup.button('Деревня', 'primary'),],[Markup.button('Лагерь', 'primary'),Markup.button('Магазин', 'primary'),],])
 
 // установка схем
 // Схема пользователя
