@@ -100,7 +100,7 @@ bot.command('деревня', async (ctx) => {
 
     // Клавиатура для бота
     let TrueKeyBoard = null;
-    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
+    //if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
 
     if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
     {
