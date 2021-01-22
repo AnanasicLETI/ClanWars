@@ -1,0 +1,15 @@
+{
+  "name": "clanwars",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kirill Nemtyrev",
+  "license": "ISC",
+  "dependencies": {
+    "mongoose": "^5.11.12",
+    "node-vk-bot-api": "^3.3.7"
+  }
+}
