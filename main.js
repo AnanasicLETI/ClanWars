@@ -9,7 +9,7 @@ const Schema = mongoose.Schema; // Создание схемы
 mongoose.connect(process.env.URL, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
 // Клавиатура
-const MainKeyBoard = Markup.keyboard([[Markup.button('Деревня ⛪', 'primary'),],[Markup.button('Лагерь 🎪', 'primary'),Markup.button('Лаборатория 💈', 'primary'),],])
+const MainKeyBoard = Markup.keyboard([[Markup.button('Деревня ⛪', 'primary'),],[Markup.button('Лагерь 🎪', 'primary'),Markup.button('Лаборатория 💈', 'primary'),],[Markup.button('Магазин 🏹', 'positive'),],[Markup.button('Атаковать ⚔', 'negative'),],])
 
 // установка схем
 // Схема пользователя
@@ -20,7 +20,6 @@ const userScheme = new Schema({
     Gold: Number, // Голда
     Gems: Number, // Кристаллов
     TownHall: Number, // Уровень деревни
-    Repository: Number, // Уровень хранилища
     Guardian: Number, // Стражи
     GuardianHealth: Number, // Хп стражей
     GuardinLevel: Number, // Уровень стражей
@@ -65,7 +64,6 @@ async function RegisterPlayer(ID)
         Gold: 100, 
         Gems: 0, 
         TownHall: 1, 
-        Repository: 1, 
         Guardian: 5, 
         GuardianHealth: 20, 
         GuardinLevel: 1, 
@@ -115,8 +113,7 @@ bot.command('деревня', async (ctx) => {
     await ctx.reply(` ⛪ ${user.Name}, ваша деревня:\n\n\
     📌 Персональный ID: ${user.ID}\n\
     🕍 Главное здание: ${user.TownHall} уровень.\n\
-    💰 Состояние хранилища: ${user.Gold} золота.\n\
-    - Уровень хранилища ${user.Repository}\n\n\
+    💰 Состояние хранилища: ${user.Gold} золота.\n\n\
     💂 Стражей деревни: ${user.Guardian} людей.\n\
     ♥ Здоровье стражей: ${user.GuardianHealth}/${user.TownHall*20} HP\n\
     🛡 Пушки: ${user.Cannons}/${user.TownHall*2} | Уровень: ${user.CannonsLevel}
@@ -255,23 +252,23 @@ bot.command('лаборатория', async (ctx) => {
     }
     let messageLaboratory = '⚔ Доступны к прокачке:\n';
     const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
-    if(user.VikingLevel + user.Laboratory != user.Laboratory + 2)
-        messageLaboratory += `🦸‍♂️ Викинг: ${user.VikingLevel}/${user.Laboratory + 2}\n- Стоимость улучшения: ${user.VikingLevel*100} злата\n`;
+    if(user.VikingLevel != user.Laboratory + 1)
+        messageLaboratory += `🦸‍♂️ Викинг: доступно к улучшению\n- Стоимость улучшения: ${user.VikingLevel*100} злата\n`;
     
-    if(user.GoblinLevel + user.Laboratory != user.Laboratory + 2 && user.Laboratory >= 2)
-        messageLaboratory += `🧟‍♂️ Гоблин: ${user.GoblinLevel}/${user.Laboratory + 2}\n- Стоимость улучшения: ${user.GoblinLevel*200} злата\n`;
+    if(user.GoblinLevel != user.Laboratory + 1 && user.Laboratory >= 2)
+        messageLaboratory += `🧟‍♂️ Гоблин: доступно к улучшению\n- Стоимость улучшения: ${user.GoblinLevel*200} злата\n`;
 
-    if(user.GigantLevel + user.Laboratory != user.Laboratory + 2 && user.Laboratory >= 3)
-        messageLaboratory += `👹 Гигант: ${user.GigantLevel}/${user.Laboratory + 2}\n- Стоимость улучшения: ${user.GigantLevel*300} злата\n`;
+    if(user.GigantLevel != user.Laboratory + 1 && user.Laboratory >= 3)
+        messageLaboratory += `👹 Гигант: доступно к улучшению\n- Стоимость улучшения: ${user.GigantLevel*300} злата\n`;
 
-    if(user.DragonLevel + user.Laboratory != user.Laboratory + 2 && user.Laboratory >= 4)
-        messageLaboratory += `👿 Дракон: ${user.DragonLevel}/${user.Laboratory + 2}\n- Стоимость улучшения: ${user.DragonLevel*400} злата\n`;
+    if(user.DragonLevel != user.Laboratory + 1 && user.Laboratory >= 4)
+        messageLaboratory += `👿 Дракон: доступно к улучшению\n- Стоимость улучшения: ${user.DragonLevel*400} злата\n`;
 
-    if(user.PekkaLevel + user.Laboratory != user.Laboratory + 2 && user.Laboratory >= 5)
-        messageLaboratory += `🤖 Пекка: ${user.PekkaLevel}/${user.Laboratory + 2}\n- Стоимость улучшения: ${user.PekkaLevel*500} злата\n`;
+    if(user.PekkaLevel != user.Laboratory + 1 && user.Laboratory >= 5)
+        messageLaboratory += `🤖 Пекка: доступно к улучшению\n- Стоимость улучшения: ${user.PekkaLevel*500} злата\n`;
 
-    await ctx.reply(` 💈 ${user.Name}, ваша лаборатория:\n\n\
-    💉 Уровень лаборатории: ${user.Laboratory}\n\
+    await ctx.reply(` 💈 ${user.Name}, ваша лаборатория:\n\
+    💉 Уровень лаборатории: ${user.Laboratory}\n\n\
     ${messageLaboratory}\n\n\
     - Для улучшения бойцов:\n\
     Улучшить <название бойца>`, null, TrueKeyBoard);
@@ -299,7 +296,7 @@ bot.command('улучшить', async (ctx) => {
         if(user.Gold < user.VikingLevel*100)
             return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
 
-        if(user.VikingLevel + user.Laboratory == user.Laboratory + 2)
+        if(user.VikingLevel == user.Laboratory + 1)
             return await ctx.reply(' 🏹 У вас уже прокачен данный персонаж на максимально возможный уровень', null, TrueKeyBoard);
 
         await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.VikingLevel*100, VikingLevel: user.VikingLevel + 1 }).exec();
@@ -313,7 +310,7 @@ bot.command('улучшить', async (ctx) => {
         if(user.Laboratory < 2)
             return await ctx.reply(' 🏹 Ваша лаборатория недостаточно улучшена, чтобы прокачать данного персонажа.', null, TrueKeyBoard);
 
-        if(user.GoblinLevel + user.Laboratory == user.Laboratory + 2)
+        if(user.GoblinLevel == user.Laboratory + 1)
             return await ctx.reply(' 🏹 У вас уже прокачен данный персонаж на максимально возможный уровень', null, TrueKeyBoard);
 
         await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.GoblinLevel*200, GoblinLevel: user.GoblinLevel + 1 }).exec();
@@ -327,7 +324,7 @@ bot.command('улучшить', async (ctx) => {
         if(user.Laboratory < 3)
             return await ctx.reply(' 🏹 Ваша лаборатория недостаточно улучшена, чтобы прокачать данного персонажа.', null, TrueKeyBoard);
 
-        if(user.GigantLevel + user.Laboratory == user.Laboratory + 2)
+        if(user.GigantLevel == user.Laboratory + 1)
             return await ctx.reply(' 🏹 У вас уже прокачен данный персонаж на максимально возможный уровень', null, TrueKeyBoard);
 
         await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.GigantLevel*300, GigantLevel: user.GigantLevel + 1 }).exec();
@@ -341,7 +338,7 @@ bot.command('улучшить', async (ctx) => {
         if(user.Laboratory < 4)
             return await ctx.reply(' 🏹 Ваша лаборатория недостаточно улучшена, чтобы прокачать данного персонажа.', null, TrueKeyBoard);
 
-        if(user.DragonLevel + user.Laboratory == user.Laboratory + 2)
+        if(user.DragonLevel == user.Laboratory + 1)
             return await ctx.reply(' 🏹 У вас уже прокачен данный персонаж на максимально возможный уровень', null, TrueKeyBoard);
 
         await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.DragonLevel*400, DragonLevel: user.DragonLevel + 1 }).exec();
@@ -355,13 +352,183 @@ bot.command('улучшить', async (ctx) => {
         if(user.Laboratory < 5)
             return await ctx.reply(' 🏹 Ваша лаборатория недостаточно улучшена, чтобы прокачать данного персонажа.', null, TrueKeyBoard);
 
-        if(user.PekkaLevel + user.Laboratory == user.Laboratory + 2)
+        if(user.PekkaLevel == user.Laboratory + 1)
             return await ctx.reply(' 🏹 У вас уже прокачен данный персонаж на максимально возможный уровень', null, TrueKeyBoard);
 
         await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.PekkaLevel*500, PekkaLevel: user.PekkaLevel + 1 }).exec();
         return await ctx.reply(` 🤖 Улучшение пекка завершено\nСтоимость: ${user.PekkaLevel*500} злата\nУровень пекка: ${user.PekkaLevel+1}`, null, TrueKeyBoard);
     }
+    else if(args[1].toLowerCase() == 'ратуша')
+    {
+        if(user.Gold < user.TownHall*500)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.TownHall == 5)
+            return await ctx.reply(' 🏹 У вас уже максимальный уровень ратуши.', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.TownHall*500, TownHall: user.TownHall + 1 }).exec();
+        return await ctx.reply(` 🏹 Улучшение ратуши завершено!\nСтоимость: ${user.TownHall*500} злата\nУровень: ${user.TownHall+1}`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'лагерь')
+    {
+        if(user.Gold < user.Camp*200)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.TownHall == user.Camp)
+            return await ctx.reply(' 🏹 Для улучшения лагеря нужно иметь ратушу выше уровня!', null, TrueKeyBoard);
+
+        if(user.Camp == 5)
+            return await ctx.reply(' 🏹 У вас уже максимальный уровень лагеря.', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.Camp*200, Camp: user.Camp + 1 }).exec();
+        return await ctx.reply(` 🏹 Улучшение лагеря завершено!\nСтоимость: ${user.Camp*200} злата\nУровень: ${user.Camp+1}`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'лаборатория')
+    {
+        if(user.Gold < user.Laboratory*300)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.TownHall == user.Laboratory)
+            return await ctx.reply(' 🏹 Для улучшения лаборатория нужно иметь ратушу выше уровня!', null, TrueKeyBoard);
+
+        if(user.Laboratory == 5)
+            return await ctx.reply(' 🏹 У вас уже максимальный уровень лагеря.', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.Laboratory*300, Laboratory: user.Laboratory + 1 }).exec();
+        return await ctx.reply(` 🏹 Улучшение лаборатория завершено!\nСтоимость: ${user.Laboratory*300} злата\nУровень: ${user.Laboratory+1}`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'пушка')
+    {
+        if(user.Gold < user.CannonsLevel*100)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.TownHall + 1 == user.CannonsLevel)
+            return await ctx.reply(' 🏹 Для улучшения пушек нужно иметь ратушу выше уровня!', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.CannonsLevel*100, CannonsLevel: user.CannonsLevel + 1 }).exec();
+        return await ctx.reply(` 🏹 Улучшение пушек завершено!\nСтоимость: ${user.CannonsLevel*100} злата\nУровень: ${user.CannonsLevel+1}`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'башня')
+    {
+        if(user.Gold < user.TowerLevel*100)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.TownHall + 1 == user.TowerLevel)
+            return await ctx.reply(' 🏹 Для улучшения башни нужно иметь ратушу выше уровня!', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.TowerLevel*100, TowerLevel: user.TowerLevel + 1 }).exec();
+        return await ctx.reply(` 🏹 Улучшение башни завершено!\nСтоимость: ${user.TowerLevel*100} злата\nУровень: ${user.TowerLevel+1}`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'король')
+    {
+        if(user.KingGoblin == 0)
+            return await ctx.reply(' 🏹 У вас не имеется король гоблинов!', null, TrueKeyBoard);
+
+        if(user.Gold < user.KingGoblin*25)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.TownHall * 5 == user.KingGoblin)
+            return await ctx.reply(' 🏹 Для улучшения короля нужно иметь ратушу выше уровня!', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.KingGoblin*25, KingGoblin: user.KingGoblin + 1 }).exec();
+        return await ctx.reply(` 🏹 Улучшение короля завершено!\nСтоимость: ${user.KingGoblin*25} злата\nУровень: ${user.KingGoblin+1}`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'хранитель')
+    {
+        if(user.TheKeeper == 0)
+            return await ctx.reply(' 🏹 У вас не имеется хранителя!', null, TrueKeyBoard);
+
+        if(user.Gold < user.TheKeeper*50)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.TownHall * 2 == user.TheKeeper)
+            return await ctx.reply(' 🏹 Для улучшения хранителя нужно иметь ратушу выше уровня!', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.TheKeeper*50, TheKeeper: user.TheKeeper + 1 }).exec();
+        return await ctx.reply(` 🏹 Улучшение хранителя завершено!\nСтоимость: ${user.TheKeeper*50} злата\nУровень: ${user.TheKeeper+1}`, null, TrueKeyBoard);
+    }
     else return await ctx.reply(' 🏹 Я тебя не понял.. Что ты хочешь улучшить?', null, TrueKeyBoard);
+});
+// Функция бота: Команда - <магазин>, lower = True
+bot.command('магазин', async (ctx) => {
+
+    // Клавиатура для бота
+    let TrueKeyBoard = null;
+    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
+
+    if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
+    {
+        if (ctx.message.from_id == ctx.message.peer_id) // Проверка на ввод сообщение на прямую боту
+            await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
+        else return true;
+    }
+    const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
+    const args = ctx.message.text.split(' ');
+    if(!args[1] || !args[2])
+        return await ctx.reply(` 🏹 Ассортимент магазина:\n\n\
+        🛡 Пушка - стоимость за пушку ${user.CannonsLevel*10} злата\n\
+        🏹 Башня - стоимость за башню ${user.TowerLevel*10} злата\n\n\
+        🧝 Король - стоимость короля 50 злата\n\
+        🧙 Хранитель - стоиомость хранителя 150 злата\n\n\
+        Используйте: Магазин <название> <кол-во>`, null, TrueKeyBoard);
+    const ammount = parseInt(args[2]);
+    if(args[1].toLowerCase() == 'пушку')
+    {
+        if(user.Cannons == user.TownHall * 2)
+            return await ctx.reply(' 🏹 Чтобы иметь больше пушек, улучшите ратушу!', null, TrueKeyBoard);
+
+        if(user.Cannons + ammount > user.TownHall * 2)
+            return await ctx.reply(' 🏹 Нет места для стольки пушек!', null, TrueKeyBoard);
+
+        if(user.Gold < user.CannonsLevel*10*ammount)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.CannonsLevel*10*ammount, Cannons: user.Cannons + ammount }).exec();
+        return await ctx.reply(` 🏹 Вы успешно построили X${ammount} пушек!\nСтоимость: ${user.CannonsLevel*10*ammount} злата.`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'башня')
+    {
+        if(user.Tower == user.TownHall * 3)
+            return await ctx.reply(' 🏹 Чтобы иметь больше пушек, улучшите ратушу!', null, TrueKeyBoard);
+
+        if(user.Tower + ammount > user.TownHall * 3)
+            return await ctx.reply(' 🏹 Нет места для стольки пушек!', null, TrueKeyBoard);
+
+        if(user.Gold < user.TowerLevel*10*ammount)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.TowerLevel*10*ammount, Tower: user.Tower + ammount }).exec();
+        return await ctx.reply(` 🏹 Вы успешно построили X${ammount} башень!\nСтоимость: ${user.TowerLevel*10*ammount} злата.`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'король')
+    {
+        if(TownHall < 3)
+            return await ctx.reply(' 🏹 У вас недостаточный уровень ратуши!', null, TrueKeyBoard);
+
+        if(user.KingGoblin > 0)
+            return await ctx.reply(' 🏹 У вас уже имеется король гоблинов!', null, TrueKeyBoard);
+
+        if(user.Gold < 50)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - 50, KingGoblin: 1 }).exec();
+        return await ctx.reply(` 🏹 Вы успешно наняли короля гоблинов!\nСтоимость: 50 злата.`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'хранитель')
+    {
+        if(TownHall < 5)
+            return await ctx.reply(' 🏹 У вас недостаточный уровень ратуши!', null, TrueKeyBoard);
+
+        if(user.TheKeeper > 0)
+            return await ctx.reply(' 🏹 У вас уже имеется Хранитель!', null, TrueKeyBoard);
+
+        if(user.Gold < 150)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - 150, TheKeeper: 1 }).exec();
+        return await ctx.reply(` 🏹 Вы успешно наняли хранителя!\nСтоимость: 150 злата.`, null, TrueKeyBoard);
+    }
+    else return await ctx.reply(' 🏹 Я тебя не понял!', null, TrueKeyBoard);
 });
 // Отслеживание всех сообщений
 bot.event('message_new', async (ctx) => {
