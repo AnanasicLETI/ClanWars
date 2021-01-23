@@ -253,7 +253,7 @@ bot.command('лаборатория', async (ctx) => {
             await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
         else return true;
     }
-    let messageLaboratory = '⚔ Доступны к прокачке:';
+    let messageLaboratory = '⚔ Доступны к прокачке:\n';
     const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
     if(user.VikingLevel + user.Laboratory != user.Laboratory + 2)
         messageLaboratory += `🦸‍♂️ Викинг: ${user.VikingLevel}/${user.Laboratory + 2}\n- Стоимость улучшения: ${user.VikingLevel*100} злата\n`;
