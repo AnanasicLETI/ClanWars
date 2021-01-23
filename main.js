@@ -138,22 +138,22 @@ bot.command('лагерь', async (ctx) => {
     }
     const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
     let messageCamp = "⚔ Бойцы:\n";
-    if(Vikings + Goblins + Dragons + Pekka == 0)
+    if(user.Vikings + user.Goblins + user.Dragons + user.Pekka == 0)
         messageCamp = "В тренировочном лагере пусто..\nДля тренировки ваших бойцов: Тренировать <кого тренировать> <кол-во>";
     
-    if(Vikings > 0)
+    if(user.Vikings > 0)
         messageCamp += `🦸‍♂️ Викинги: ${user.Vikings} [${user.VikingLevel}]\n`;
 
-    if(Goblins > 0)
+    if(user.Goblins > 0)
         messageCamp += `🧟‍♂️ Гоблинов: ${user.Goblins} [${user.GoblinLevel}]\n`;
 
-    if(Gigants > 0)
+    if(user.Gigants > 0)
         messageCamp += `👹 Гигантов: ${user.Gigants} [${user.GigantLevel}]\n`;
 
-    if(Dragons > 0)
+    if(user.Dragons > 0)
         messageCamp += `👿 Драконов: ${user.Dragons} [${user.DragonLevel}]\n`;
 
-    if(Pekka > 0)
+    if(user.Pekka > 0)
         messageCamp += `🤖 Пекк: ${user.Pekka} [${user.PekkaLevel}]\n`;
 
     await ctx.reply(` 🎪 ${user.Name}, тренировочный лагерь:\n\n\
