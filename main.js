@@ -9,7 +9,7 @@ const Schema = mongoose.Schema; // Создание схемы
 mongoose.connect(process.env.URL, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
 // Клавиатура
-const MainKeyBoard = Markup.keyboard([[Markup.button('Деревня ⛪', 'primary'),],[Markup.button('Лагерь 🎪', 'primary'),Markup.button('Магазин', 'primary'),],])
+const MainKeyBoard = Markup.keyboard([[Markup.button('Деревня ⛪', 'primary'),],[Markup.button('Лагерь 🎪', 'primary'),Markup.button('Лаборатория 💈', 'primary'),],])
 
 // установка схем
 // Схема пользователя
@@ -71,7 +71,7 @@ async function RegisterPlayer(ID)
         GuardinLevel: 1, 
         Camp: 1, 
         CampCount: 0,  
-        Laboratory: 0,
+        Laboratory: 1,
         Vikings: 0, 
         VikingLevel: 1, 
         Goblins: 0, 
@@ -84,7 +84,7 @@ async function RegisterPlayer(ID)
         PekkaLevel: 1, 
         Cannons: 1, 
         CannonsLevel: 1,
-        Tower: 0,
+        Tower: 1,
         TowerLevel: 1, 
         KingGoblin: 0,
         KingGoblinHealth: 0,
@@ -139,7 +139,7 @@ bot.command('лагерь', async (ctx) => {
     const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
     let messageCamp = "⚔ Бойцы:\n";
     if(user.Vikings + user.Goblins + user.Dragons + user.Pekka == 0)
-        messageCamp = "В тренировочном лагере пусто..\nДля тренировки ваших бойцов: Тренировать <кого тренировать> <кол-во>";
+        messageCamp = "В тренировочном лагере пусто..\nДля тренировки ваших бойцов\n- Тренировать <кого тренировать> <кол-во>";
     
     if(user.Vikings > 0)
         messageCamp += `🦸‍♂️ Викинги: ${user.Vikings} [${user.VikingLevel}]\n`;
@@ -239,6 +239,129 @@ bot.command('тренировать', async (ctx) => {
         return await ctx.reply(` 🤖 Тренировка пекк закончена!\nВыпущено бойцов ${ammount}.`, null, TrueKeyBoard);
     }
     else return await ctx.reply(' 🏹 Такого персонажа не существует!', null, TrueKeyBoard);
+});
+// Функция бота: Команда - <Лаборатория>, lower = True
+bot.command('лаборатория', async (ctx) => {
+
+    // Клавиатура для бота
+    let TrueKeyBoard = null;
+    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
+
+    if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
+    {
+        if (ctx.message.from_id == ctx.message.peer_id) // Проверка на ввод сообщение на прямую боту
+            await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
+        else return true;
+    }
+    let messageLaboratory = '⚔ Доступны к прокачке:';
+    const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
+    if(user.VikingLevel + user.Laboratory != user.Laboratory + 2)
+        messageLaboratory += `🦸‍♂️ Викинг: ${user.VikingLevel}/${user.Laboratory + 2}\n- Стоимость улучшения: ${user.VikingLevel*100} злата\n`;
+    
+    if(user.GoblinLevel + user.Laboratory != user.Laboratory + 2 && user.Laboratory >= 2)
+        messageLaboratory += `🧟‍♂️ Гоблин: ${user.GoblinLevel}/${user.Laboratory + 2}\n- Стоимость улучшения: ${user.GoblinLevel*200} злата\n`;
+
+    if(user.GigantLevel + user.Laboratory != user.Laboratory + 2 && user.Laboratory >= 3)
+        messageLaboratory += `👹 Гигант: ${user.GigantLevel}/${user.Laboratory + 2}\n- Стоимость улучшения: ${user.GigantLevel*300} злата\n`;
+
+    if(user.DragonLevel + user.Laboratory != user.Laboratory + 2 && user.Laboratory >= 4)
+        messageLaboratory += `👿 Дракон: ${user.DragonLevel}/${user.Laboratory + 2}\n- Стоимость улучшения: ${user.DragonLevel*400} злата\n`;
+
+    if(user.PekkaLevel + user.Laboratory != user.Laboratory + 2 && user.Laboratory >= 5)
+        messageLaboratory += `🤖 Пекка: ${user.PekkaLevel}/${user.Laboratory + 2}\n- Стоимость улучшения: ${user.PekkaLevel*500} злата\n`;
+
+    await ctx.reply(` 💈 ${user.Name}, ваша лаборатория:\n\n\
+    💉 Уровень лаборатории: ${user.Laboratory}\n\
+    ${messageLaboratory}\n\n\
+    - Для улучшения бойцов:\n\
+    Улучшить <название бойца>`, null, TrueKeyBoard);
+});
+// Функция бота: Команда - <Улучшить>, lower = True
+bot.command('улучшить', async (ctx) => {
+
+    // Клавиатура для бота
+    let TrueKeyBoard = null;
+    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
+
+    if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
+    {
+        if (ctx.message.from_id == ctx.message.peer_id) // Проверка на ввод сообщение на прямую боту
+            await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
+        else return true;
+    }
+    const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
+    const args = ctx.message.text.split(' ');
+    if(!args[1])
+        return await ctx.reply(` 🏹 Используйте: Улучшить <что улучшить>\n`, null, TrueKeyBoard);
+
+    if(args[1].toLowerCase() == 'викинг')
+    {
+        if(user.Gold < user.VikingLevel*100)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.VikingLevel + user.Laboratory == user.Laboratory + 2)
+            return await ctx.reply(' 🏹 У вас уже прокачен данный персонаж на максимально возможный уровень', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.VikingLevel*100, VikingLevel: user.VikingLevel + 1 }).exec();
+        return await ctx.reply(` 🦸‍♂️ Улучшение викинга завершено\nСтоимость: ${user.VikingLevel*100} злата\nУровень викинга: ${user.VikingLevel+1}`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'гоблин')
+    {
+        if(user.Gold < user.GoblinLevel*200)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.Laboratory < 2)
+            return await ctx.reply(' 🏹 Ваша лаборатория недостаточно улучшена, чтобы прокачать данного персонажа.', null, TrueKeyBoard);
+
+        if(user.GoblinLevel + user.Laboratory == user.Laboratory + 2)
+            return await ctx.reply(' 🏹 У вас уже прокачен данный персонаж на максимально возможный уровень', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.GoblinLevel*200, GoblinLevel: user.GoblinLevel + 1 }).exec();
+        return await ctx.reply(` 🧟‍♂️ Улучшение гоблина завершено\nСтоимость: ${user.GoblinLevel*200} злата\nУровень гоблина: ${user.GoblinLevel+1}`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'гигант')
+    {
+        if(user.Gold < user.GigantLevel*300)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.Laboratory < 3)
+            return await ctx.reply(' 🏹 Ваша лаборатория недостаточно улучшена, чтобы прокачать данного персонажа.', null, TrueKeyBoard);
+
+        if(user.GigantLevel + user.Laboratory == user.Laboratory + 2)
+            return await ctx.reply(' 🏹 У вас уже прокачен данный персонаж на максимально возможный уровень', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.GigantLevel*300, GigantLevel: user.GigantLevel + 1 }).exec();
+        return await ctx.reply(` 👹 Улучшение гиганта завершено\nСтоимость: ${user.GigantLevel*300} злата\nУровень гиганта: ${user.GigantLevel+1}`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'дракон')
+    {
+        if(user.Gold < user.DragonLevel*400)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.Laboratory < 4)
+            return await ctx.reply(' 🏹 Ваша лаборатория недостаточно улучшена, чтобы прокачать данного персонажа.', null, TrueKeyBoard);
+
+        if(user.DragonLevel + user.Laboratory == user.Laboratory + 2)
+            return await ctx.reply(' 🏹 У вас уже прокачен данный персонаж на максимально возможный уровень', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.DragonLevel*400, DragonLevel: user.DragonLevel + 1 }).exec();
+        return await ctx.reply(` 👿 Улучшение дракона завершено\nСтоимость: ${user.DragonLevel*400} злата\nУровень дракона: ${user.DragonLevel+1}`, null, TrueKeyBoard);
+    }
+    else if(args[1].toLowerCase() == 'пекка')
+    {
+        if(user.Gold < user.PekkaLevel*500)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.Laboratory < 5)
+            return await ctx.reply(' 🏹 Ваша лаборатория недостаточно улучшена, чтобы прокачать данного персонажа.', null, TrueKeyBoard);
+
+        if(user.PekkaLevel + user.Laboratory == user.Laboratory + 2)
+            return await ctx.reply(' 🏹 У вас уже прокачен данный персонаж на максимально возможный уровень', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.PekkaLevel*500, PekkaLevel: user.PekkaLevel + 1 }).exec();
+        return await ctx.reply(` 🤖 Улучшение пекка завершено\nСтоимость: ${user.PekkaLevel*500} злата\nУровень пекка: ${user.PekkaLevel+1}`, null, TrueKeyBoard);
+    }
+    else return await ctx.reply(' 🏹 Я тебя не понял.. Что ты хочешь улучшить?', null, TrueKeyBoard);
 });
 // Отслеживание всех сообщений
 bot.event('message_new', async (ctx) => {
