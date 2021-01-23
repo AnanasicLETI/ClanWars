@@ -91,8 +91,7 @@ async function RegisterPlayer(ID)
         TheKeeper: 0,
         War: 0,
         ADMIN: 0,
-        VIP: 0,
-        TimeCamping}); // Функция создания записи в базе данных
+        VIP: 0}); // Функция создания записи в базе данных
 }
 // Функция бота: Команда - <Деревня>, lower = True
 bot.command('деревня', async (ctx) => {
