@@ -9,7 +9,7 @@ const Schema = mongoose.Schema; // Создание схемы
 mongoose.connect(process.env.URL, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
 // Клавиатура
-const MainKeyBoard = Markup.keyboard([[Markup.button('Деревня ⛪', 'primary'),],[Markup.button('Лагерь 🎪', 'primary'),Markup.button('Магазин', 'primary'),],]),
+const MainKeyBoard = Markup.keyboard([[Markup.button('Деревня ⛪', 'primary'),],[Markup.button('Лагерь 🎪', 'primary'),Markup.button('Магазин', 'primary'),],])
 
 // установка схем
 // Схема пользователя
@@ -155,6 +155,7 @@ bot.command('лагерь', async (ctx) => {
 
     if(Pekka > 0)
         messageCamp += `🤖 Пекк: ${user.Pekka} [${user.PekkaLevel}]\n`;
+
     await ctx.reply(` 🎪 ${user.Name}, тренировочный лагерь:\n\n\
     ⛺ Вместительность: ${user.CampCount}/${user.Camp*15} | Уровень ${user.Camp}\n\n${messageCamp}`, null, TrueKeyBoard);
 });
