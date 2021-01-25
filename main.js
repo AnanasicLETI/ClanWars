@@ -556,19 +556,19 @@ bot.command('атаковать', async (ctx) => {
         CountPlayers++;
     }
     const random = getRandomInt(CountPlayers);
-    if(!await await User.findOne({ID: 1000+random}).exec())
+    if(!await await User.findOne({ID: 1000+random}).exec() || user.ID == 1000+random)
         return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueKeyBoard);
     
     const enemy = await User.findOne({ID: 1000+random}).exec(); // Поиск пользователя и запись в переменную
     await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Finder: enemy.VK_ID }).exec();
     await ctx.reply(` 🏹 ВРАГ НАЙДЕН!\n\n\
-    На кого нападаите: [${enemy.VK_ID}|${enemy.Name}]\n\
+    На кого нападаите: [id${enemy.VK_ID}|${enemy.Name}]\n\
     🕍 Ратуша: ${enemy.TownHall} уровень\n\
     🛡 Пушек: ${enemy.Cannons} шт.\n\
     🏹 Башни: ${enemy.Tower} шт.\n\n\
     При победе вы получите:
     🏆 Кубков +30\n\
-    💰 Золота: ${enemy.Gold- enemy.Gold/40*100}\n\n\
+    💰 Золота: ${enemy.Gold- enemy.Gold*40/100}\n\n\
     Для выбора другого опонента, введите: Далее\n\
     Прекратить поиск: Отмена`, null, TrueKeyBoard);
 });
