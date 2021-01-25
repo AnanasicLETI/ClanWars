@@ -693,18 +693,19 @@ async function CheckAttack()
 
         if(PowerAttack > PowerGuard)
         {
-            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ War: 0, Finder:0, Attack: 0, Time: 0, Guard: 0, Gold: user.Gold+ enemy.Gold - enemy.Gold*40/100 }).exec();
+            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Vikings: 0, Goblin: 0, Gigant: 0, Dragon: 0, Pekka: 0, War: 0, Finder:0, Attack: 0, Time: 0, Guard: 0, Gold: user.Gold+ enemy.Gold - enemy.Gold*40/100 }).exec();
             await bot.sendMessage(user.VK_ID, `🏹 ПОБЕДА!\n\nВаши бойцы разрушили деревню: [id${enemy.VK_ID}|${enemy.Name}]\n\nНаграда:\n💰 +${enemy.Gold - enemy.Gold*40/100}\n🏆 +30 Кубков`);
             await User.findOneAndUpdate({VK_ID: enemy.VK_ID},{ War: 0, Finder:0, Attack: 0, Time: 0, Guard: 0, Gold: enemy.Gold - enemy.Gold*40/100 }).exec();
             await bot.sendMessage(enemy.VK_ID, `🏹 ПОРАЖЕНИЕ!\n\nВаша деревня не выдержала атаку [id${user.VK_ID}|${user.Name}]\n\nПотери:\n💰 -${enemy.Gold - enemy.Gold*40/100}\n🏆 -30 Кубков`);
         }
         else
         {
-            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0 }).exec();
+            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Vikings: 0, Goblin: 0, Gigant: 0, Dragon: 0, Pekka: 0, War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0 }).exec();
             await bot.sendMessage(user.VK_ID, `🏹 ПОРАЖЕНИЕ!\n\nВаши бойцы не смогли разрешить деревню: [id${enemy.VK_ID}|${enemy.Name}]\n\n🏆 -30 Кубков`);
             await User.findOneAndUpdate({VK_ID: enemy.VK_ID},{ War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0 }).exec();
             await bot.sendMessage(enemy.VK_ID, `🏹 ПОБЕДА!\n\nВаша деревня выдержала атаку [id${user.VK_ID}|${user.Name}]\n\n🏆 +30 Кубков`);
         }
+        console.log(`${PowerGuard} ${PowerAttack}`);
     }
 }
 bot.startPolling(); 
