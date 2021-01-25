@@ -560,8 +560,8 @@ bot.command('атаковать', async (ctx) => {
     if(user.Finder != 0)
     {
         const enemy = await User.findOne({VK_ID: user.Finder}).exec(); // Поиск пользователя и запись в переменную
-        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Attack: user.Finder, War: 1 }).exec();
-        await User.findOneAndUpdate({VK_ID: user.Finder},{ Guard: ctx.message.from_id, War: 1 }).exec();
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Attack: user.Finder, War: 1, Time: 20 }).exec();
+        await User.findOneAndUpdate({VK_ID: user.Finder},{ Guard: ctx.message.from_id, War: 1, Time: 20 }).exec();
         await bot.sendMessage(user.Finder, `🏹 НАПАДЕНИЕ НА ДЕРЕВНЮ!\n\n\
         На деревеню нападет [id${ctx.message.from_id}|${user.Name}]\n\n\
         💂 Стражи выстроились на защиту!\n\
