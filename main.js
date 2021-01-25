@@ -540,13 +540,12 @@ bot.command('атаковать', async (ctx) => {
 
     // Клавиатура для бота
     let TrueKeyBoard = null;
-    let AttackTrueKeyBoard = null;
+    let TrueAttackKeyBoard = null;
     if (ctx.message.from_id == ctx.message.peer_id) 
     {
         TrueKeyBoard = MainKeyBoard;
-        AttackTrueKeyBoard = AttackKeyBoard;
+        TrueAttackKeyBoard = AttackKeyBoard;
     }
-    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = AttackKeyBoard;
 
     if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
     {
@@ -570,7 +569,7 @@ bot.command('атаковать', async (ctx) => {
         Деревня которую вы атакуете [id${user.Finder}|${enemy.Name}]\n\
         Атака будет длиться неопределенное время..`, null, TrueKeyBoard);
     }
-    await ctx.reply(` 🏹 Идёт поиск опонента...`, null, TrueKeyBoard);
+    await ctx.reply(` 🏹 Идёт поиск опонента...`, null, TrueAttackKeyBoard);
     let CountPlayers = 0;
     for(const user of await User.find().exec())
     {
@@ -578,7 +577,7 @@ bot.command('атаковать', async (ctx) => {
     }
     const random = getRandomInt(CountPlayers);
     if(!await await User.findOne({ID: 1000+random}).exec() || user.ID == 1000+random)
-        return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueKeyBoard);
+        return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueAttackKeyBoard);
     
     const enemy = await User.findOne({ID: 1000+random}).exec(); // Поиск пользователя и запись в переменную
     await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Finder: enemy.VK_ID }).exec();
@@ -592,18 +591,18 @@ bot.command('атаковать', async (ctx) => {
     💰 Золота: ${enemy.Gold- enemy.Gold*40/100}\n\n\
     Для выбора другого опонента, введите: Далее\n\
     Прекратить поиск: Отмена\n\
-    Начать атаку на деревню: Атаковать`, null, AttackTrueKeyBoard);
+    Начать атаку на деревню: Атаковать`, null, TrueAttackKeyBoard);
 });
 // Функция бота: Команда - <Далее>, lower = True
 bot.command('далее', async (ctx) => {
 
     // Клавиатура для бота
     let TrueKeyBoard = null;
-    let AttackTrueKeyBoard = null;
+    let TrueAttackKeyBoard = null;
     if (ctx.message.from_id == ctx.message.peer_id) 
     {
         TrueKeyBoard = MainKeyBoard;
-        AttackTrueKeyBoard = AttackKeyBoard;
+        TrueAttackKeyBoard = AttackKeyBoard;
     }
 
     if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
@@ -620,7 +619,7 @@ bot.command('далее', async (ctx) => {
     if(user.War != 0)
         return await ctx.reply(` 🏹 Вы уже находитесь в бою/обороне...`, null, TrueKeyBoard);
 
-    await ctx.reply(` 🏹 Идёт поиск опонента...`, null, TrueKeyBoard);
+    await ctx.reply(` 🏹 Идёт поиск опонента...`, null, TrueAttackKeyBoard);
     let CountPlayers = 0;
     for(const user of await User.find().exec())
     {
@@ -628,7 +627,7 @@ bot.command('далее', async (ctx) => {
     }
     const random = getRandomInt(CountPlayers);
     if(!await await User.findOne({ID: 1000+random}).exec() || user.ID == 1000+random)
-        return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueKeyBoard);
+        return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueAttackKeyBoard);
     
     const enemy = await User.findOne({ID: 1000+random}).exec(); // Поиск пользователя и запись в переменную
     await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Finder: enemy.VK_ID }).exec();
@@ -642,7 +641,7 @@ bot.command('далее', async (ctx) => {
     💰 Золота: ${enemy.Gold- enemy.Gold*40/100}\n\n\
     Для выбора другого опонента, введите: Далее\n\
     Прекратить поиск: Отмена\n\
-    Начать атаку на деревню: Атаковать`, null, AttackTrueKeyBoard);
+    Начать атаку на деревню: Атаковать`, null, TrueAttackKeyBoard);
 });
 // Функция бота: Команда - <Отмена>, lower = True
 bot.command('отмена', async (ctx) => {
@@ -693,14 +692,14 @@ async function CheckAttack()
 
         if(PowerAttack > PowerGuard)
         {
-            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Vikings: 0, Goblin: 0, Gigant: 0, Dragon: 0, Pekka: 0, War: 0, Finder:0, Attack: 0, Time: 0, Guard: 0, Gold: user.Gold+ enemy.Gold - enemy.Gold*40/100 }).exec();
+            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Vikings: 0, Goblin: 0, Gigant: 0, Dragon: 0, Pekka: 0, War: 0, Finder:0, Attack: 0, Time: 0, Guard: 0, Gold: user.Gold+ enemy.Gold - enemy.Gold*40/100, CampCount: 0 }).exec();
             await bot.sendMessage(user.VK_ID, `🏹 ПОБЕДА!\n\nВаши бойцы разрушили деревню: [id${enemy.VK_ID}|${enemy.Name}]\n\nНаграда:\n💰 +${enemy.Gold - enemy.Gold*40/100}\n🏆 +30 Кубков`);
             await User.findOneAndUpdate({VK_ID: enemy.VK_ID},{ War: 0, Finder:0, Attack: 0, Time: 0, Guard: 0, Gold: enemy.Gold - enemy.Gold*40/100 }).exec();
             await bot.sendMessage(enemy.VK_ID, `🏹 ПОРАЖЕНИЕ!\n\nВаша деревня не выдержала атаку [id${user.VK_ID}|${user.Name}]\n\nПотери:\n💰 -${enemy.Gold - enemy.Gold*40/100}\n🏆 -30 Кубков`);
         }
         else
         {
-            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Vikings: 0, Goblin: 0, Gigant: 0, Dragon: 0, Pekka: 0, War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0 }).exec();
+            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Vikings: 0, Goblin: 0, Gigant: 0, Dragon: 0, Pekka: 0, War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0, CampCount: 0 }).exec();
             await bot.sendMessage(user.VK_ID, `🏹 ПОРАЖЕНИЕ!\n\nВаши бойцы не смогли разрешить деревню: [id${enemy.VK_ID}|${enemy.Name}]\n\n🏆 -30 Кубков`);
             await User.findOneAndUpdate({VK_ID: enemy.VK_ID},{ War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0 }).exec();
             await bot.sendMessage(enemy.VK_ID, `🏹 ПОБЕДА!\n\nВаша деревня выдержала атаку [id${user.VK_ID}|${user.Name}]\n\n🏆 +30 Кубков`);
