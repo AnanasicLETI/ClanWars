@@ -681,17 +681,15 @@ async function CheckAttack()
     for(const user of await User.find({War: 1}))
     {
         if(user.Time - 20 != 0)
-            return await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Time: user.Time - 20 }).exec();
-
-        let PowerAttack;
-        let PowerGuard;
-        let enemy;
-        if(user.Attack != 0)
         {
-            enemy = await User.findOne({VK_ID: user.Attack}).exec();
-            PowerAttack = user.Vikings*user.VikingLevel+user.GoblinLevel*user.Goblins+user.Gigants*user.GigantLevel+user.Dragons*user.DragonLevel+user.Pekka*user.PekkaLevel+user.KingGoblin-15;
-            PowerGuard = enemy.Cannons*enemy.CannonsLevel+enemy.Tower*enemy.TowerLevel+enemy.Guardian;
+            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Time: user.Time - 20 }).exec();
+            continue;
         }
+
+        if(user.Attack == 0) continue;
+        const enemy = await User.findOne({VK_ID: user.Attack}).exec();
+        let PowerAttack = user.Vikings*user.VikingLevel+user.GoblinLevel*user.Goblins+user.Gigants*user.GigantLevel+user.Dragons*user.DragonLevel+user.Pekka*user.PekkaLevel+user.KingGoblin-15;
+        let PowerGuard = enemy.Cannons*enemy.CannonsLevel+enemy.Tower*enemy.TowerLevel+enemy.Guardian;
 
         if(PowerAttack > PowerGuard)
         {
