@@ -43,9 +43,10 @@ const userScheme = new Schema({
     KingGoblin: Number, // Есть ли король гоблинов
     KingGoblinHealth: Number, // Кол-во его хп
     TheKeeper: Number, // Есть ли хранитель
-    War: Number, // На кого напали
-    ADMIN: Number, // Админ ли?
-    VIP: Number, // VIP статус
+    Finder: Number, // Кого нашел
+    Attack: Number, // Нападение
+    Guard: Number, // защищается
+    War: Number, // Идет ли война
 }); 
 const User = mongoose.model("users", userScheme); // сама коллекция с пользователями
 
@@ -87,9 +88,10 @@ async function RegisterPlayer(ID)
         KingGoblin: 0,
         KingGoblinHealth: 0,
         TheKeeper: 0,
-        War: 0,
-        ADMIN: 0,
-        VIP: 0}); // Функция создания записи в базе данных
+        Finder: 0, 
+        Attack: 0,
+        Guard: 0,
+        War: 0}); // Функция создания записи в базе данных
 }
 // Функция бота: Команда - <Деревня>, lower = True
 bot.command('деревня', async (ctx) => {
@@ -472,7 +474,7 @@ bot.command('магазин', async (ctx) => {
         🧙 Хранитель - стоиомость хранителя 150 злата\n\n\
         Используйте: Магазин <название> <кол-во>`, null, TrueKeyBoard);
     const ammount = parseInt(args[2]);
-    if(args[1].toLowerCase() == 'пушку')
+    if(args[1].toLowerCase() == 'пушка' || args[1].toLowerCase() == 'пушку')
     {
         if(user.Cannons == user.TownHall * 2)
             return await ctx.reply(' 🏹 Чтобы иметь больше пушек, улучшите ратушу!', null, TrueKeyBoard);
@@ -486,7 +488,7 @@ bot.command('магазин', async (ctx) => {
         await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.CannonsLevel*10*ammount, Cannons: user.Cannons + ammount }).exec();
         return await ctx.reply(` 🏹 Вы успешно построили X${ammount} пушек!\nСтоимость: ${user.CannonsLevel*10*ammount} злата.`, null, TrueKeyBoard);
     }
-    else if(args[1].toLowerCase() == 'башня')
+    else if(args[1].toLowerCase() == 'башня' || args[1].toLowerCase() == 'башню')
     {
         if(user.Tower == user.TownHall * 3)
             return await ctx.reply(' 🏹 Чтобы иметь больше пушек, улучшите ратушу!', null, TrueKeyBoard);
@@ -530,6 +532,49 @@ bot.command('магазин', async (ctx) => {
     }
     else return await ctx.reply(' 🏹 Я тебя не понял!', null, TrueKeyBoard);
 });
+// Функция бота: Команда - <Атаковать>, lower = True
+bot.command('атаковать', async (ctx) => {
+
+    // Клавиатура для бота
+    let TrueKeyBoard = null;
+    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
+
+    if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
+    {
+        if (ctx.message.from_id == ctx.message.peer_id) // Проверка на ввод сообщение на прямую боту
+            await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
+        else return true;
+    }
+    const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
+    if(user.War != 0)
+        return await ctx.reply(` 🏹 Вы уже находитесь в бою/обороне...`, null, TrueKeyBoard);
+
+    await ctx.reply(` 🏹 Идёт поиск опонента...`, null, TrueKeyBoard);
+    let CountPlayers = 0;
+    for(const user of await User.find().exec())
+    {
+        CountPlayers++;
+    }
+    const random = getRandomInt(CountPlayers);
+    if(!await await User.findOne({ID: 1000+random}).exec())
+        return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueKeyBoard);
+    
+    const enemy = await User.findOne({ID: 1000+random}).exec(); // Поиск пользователя и запись в переменную
+    await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Finder: enemy.VK_ID }).exec();
+    await ctx.reply(` 🏹 ВРАГ НАЙДЕН!\n\n\
+    На кого нападаите: [${enemy.VK_ID}|${enemy.Name}]\n\
+    🕍 Ратуша: ${enemy.TownHall} уровень\n\
+    🛡 Пушек: ${enemy.Cannons} шт.\n\
+    🏹 Башни: ${enemy.Tower} шт.\n\n\
+    При победе вы получите:
+    🏆 Кубков +30\n\
+    💰 Золота: ${enemy.Gold- enemy.Gold/40*100}\n\n\
+    Для выбора другого опонента, введите: Далее\n\
+    Прекратить поиск: Отмена`, null, TrueKeyBoard);
+});
+function getRandomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
+  }
 // Отслеживание всех сообщений
 bot.event('message_new', async (ctx) => {
     if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
