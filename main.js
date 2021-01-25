@@ -10,6 +10,7 @@ mongoose.connect(process.env.URL, { useNewUrlParser: true, useUnifiedTopology: t
 
 // Клавиатура
 const MainKeyBoard = Markup.keyboard([[Markup.button('Деревня ⛪', 'primary'),],[Markup.button('Лагерь 🎪', 'primary'),Markup.button('Лаборатория 💈', 'primary'),],[Markup.button('Магазин 🏹', 'positive'),],[Markup.button('Атаковать ⚔', 'negative'),],])
+const AttackKeyBoard = Markup.keyboard([[Markup.button('Далее ➡', 'primary'),Markup.button('Отмена ❌', 'positive'),],[Markup.button('Атаковать ⚔', 'negative'),],])
 
 // установка схем
 // Схема пользователя
@@ -537,7 +538,7 @@ bot.command('атаковать', async (ctx) => {
 
     // Клавиатура для бота
     let TrueKeyBoard = null;
-    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
+    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = AttackKeyBoard;
 
     if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
     {
@@ -571,6 +572,73 @@ bot.command('атаковать', async (ctx) => {
     💰 Золота: ${enemy.Gold- enemy.Gold*40/100}\n\n\
     Для выбора другого опонента, введите: Далее\n\
     Прекратить поиск: Отмена`, null, TrueKeyBoard);
+});
+// Функция бота: Команда - <Далее>, lower = True
+bot.command('далее', async (ctx) => {
+
+    // Клавиатура для бота
+    let TrueKeyBoard = null;
+    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = AttackKeyBoard;
+
+    if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
+    {
+        if (ctx.message.from_id == ctx.message.peer_id) // Проверка на ввод сообщение на прямую боту
+            await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
+        else return true;
+    }
+    const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
+
+    if(user.Finder == 0)
+        return true;
+
+    if(user.War != 0)
+        return await ctx.reply(` 🏹 Вы уже находитесь в бою/обороне...`, null, TrueKeyBoard);
+
+    await ctx.reply(` 🏹 Идёт поиск опонента...`, null, TrueKeyBoard);
+    let CountPlayers = 0;
+    for(const user of await User.find().exec())
+    {
+        CountPlayers++;
+    }
+    const random = getRandomInt(CountPlayers);
+    if(!await await User.findOne({ID: 1000+random}).exec() || user.ID == 1000+random)
+        return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueKeyBoard);
+    
+    const enemy = await User.findOne({ID: 1000+random}).exec(); // Поиск пользователя и запись в переменную
+    await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Finder: enemy.VK_ID }).exec();
+    await ctx.reply(` 🏹 ВРАГ НАЙДЕН!\n\n\
+    На кого нападаите: [id${enemy.VK_ID}|${enemy.Name}]\n\
+    🕍 Ратуша: ${enemy.TownHall} уровень\n\
+    🛡 Пушек: ${enemy.Cannons} шт.\n\
+    🏹 Башни: ${enemy.Tower} шт.\n\n\
+    При победе вы получите:
+    🏆 Кубков +30\n\
+    💰 Золота: ${enemy.Gold- enemy.Gold*40/100}\n\n\
+    Для выбора другого опонента, введите: Далее\n\
+    Прекратить поиск: Отмена`, null, TrueKeyBoard);
+});
+// Функция бота: Команда - <Отмена>, lower = True
+bot.command('отмена', async (ctx) => {
+
+    // Клавиатура для бота
+    let TrueKeyBoard = null;
+    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
+
+    if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
+    {
+        if (ctx.message.from_id == ctx.message.peer_id) // Проверка на ввод сообщение на прямую боту
+            await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
+        else return true;
+    }
+    const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
+    if(user.Finder == 0)
+        return true;
+        
+    if(user.War != 0)
+        return await ctx.reply(` 🏹 Вы уже находитесь в бою/обороне...`, null, TrueKeyBoard);
+    
+    await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Finder: 0 }).exec();
+    await ctx.reply(` 🏹 Поиск врага был завершен!`, null, TrueKeyBoard);
 });
 function getRandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
