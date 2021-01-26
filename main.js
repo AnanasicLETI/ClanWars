@@ -705,7 +705,7 @@ bot.command('атаковать', async (ctx) => {
     if(user.War != 0)
         return await ctx.reply(` 🏹 Вы уже находитесь в бою/обороне...`, null, TrueKeyBoard);
 
-    if(user.Vikings+user.Goblins+user.Gigants+user.Dragon+user.Pekka == 0)
+    if(user.CampCount == 0)
         return await ctx.reply(` 🏹 У вас не имеется армии для атаки...`, null, TrueKeyBoard);
 
     if(user.Finder != 0)
@@ -770,6 +770,9 @@ bot.command('далее', async (ctx) => {
 
     if(user.War != 0)
         return await ctx.reply(` 🏹 Вы уже находитесь в бою/обороне...`, null, TrueKeyBoard);
+
+    if(user.CampCount == 0)
+        return await ctx.reply(` 🏹 У вас не имеется армии для атаки...`, null, TrueKeyBoard);
 
     await ctx.reply(` 🏹 Идёт поиск опонента...`, null, TrueAttackKeyBoard);
     let CountPlayers = 0;
