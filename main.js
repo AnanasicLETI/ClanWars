@@ -828,7 +828,7 @@ bot.event('message_new', async (ctx) => {
             await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
 
     if(ctx.message.from_id == ctx.message.peer_id)
-        await ctx.reply('🏹 Данной команды не существует!\nСписок команд: Команды', null, TrueKeyBoard);
+        await ctx.reply('🏹 Данной команды не существует!\nСписок команд: Команды');
 });
 async function CheckAttack()
 {
