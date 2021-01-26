@@ -230,12 +230,12 @@ bot.command('деревня', async (ctx) => {
     📌 Персональный ID: ${user.ID}\n\
     🕍 Ратуша: ${user.TownHall} уровень.\n\
     💰 Состояние хранилища: ${user.Gold} золота.\n\n\
-    💂 Стражей деревни: ${user.Guardian} людей.\n\
+    💂 Стражей деревни: ${user.Guardian} людей [${user.GuardinLevel}]\n\
     🛡 Пушки: ${user.Cannons}/${user.TownHall*2} | Уровень: ${user.CannonsLevel}
-    🏹 Башня с лучниками: ${user.Tower}/${user.TownHall*3} | Уровень: ${user.TowerLevel}\n\
-    ${messageKings}\n\n\
+    🏹 Башня с лучниками: ${user.Tower}/${user.TownHall*3} | Уровень: ${user.TowerLevel}\n\n\
     🏆 Кубков: ${user.Cups}\n\
-    👑 Побед: ${user.Wins}`, null, TrueKeyBoard);
+    👑 Побед: ${user.Wins}\n\n\
+    ${messageKings}`, null, TrueKeyBoard);
 });
 // Функция бота: Команда - <Лагерь>, lower = True
 bot.command('лагерь', async (ctx) => {
@@ -415,7 +415,7 @@ bot.command('улучшить', async (ctx) => {
         return await ctx.reply(` 🏹 Вы находитесь в бою/обороне...`, null, TrueKeyBoard);
     const args = ctx.message.text.split(' ');
     if(!args[1])
-        return await ctx.reply(` 🏹 С помощью улучшений можно повысить уровень:\n\
+        return await ctx.reply(` 🏹 С помощью улучшений можно повысить уровень:\n\n\
         ⛪ Ратуша - стоимость ${user.TownHall*500} злата\n\
         💈 Лаборатория - стоимость ${user.Camp*200} злата\n\
         🎪 Лагерь - стоимость ${user.Laboratory*300} злата\n\n\
@@ -506,7 +506,7 @@ bot.command('улучшить', async (ctx) => {
         if(user.TownHall == 5)
             return await ctx.reply(' 🏹 У вас уже максимальный уровень ратуши.', null, TrueKeyBoard);
 
-        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.TownHall*500, TownHall: user.TownHall + 1 }).exec();
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.TownHall*500, TownHall: user.TownHall + 1, Guardian: user.Guardin + 5 }).exec();
         return await ctx.reply(` 🏹 Улучшение ратуши завершено!\nСтоимость: ${user.TownHall*500} злата\nУровень: ${user.TownHall+1}`, null, TrueKeyBoard);
     }
     else if(args[1].toLowerCase() == 'лагерь')
