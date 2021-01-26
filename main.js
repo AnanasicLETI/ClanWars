@@ -175,7 +175,7 @@ bot.command('передать', async (ctx) => {
         return await ctx.reply('🏹 У вас недостаточно средств для перевода..', null, TrueKeyBoard);
 
     const trade = await User.findOne({ID: tradeID}).exec();
-    await User.findOneAndUpdate({VK_ID: trade.VK_ID},{ Gold: user.trade + money}).exec();
+    await User.findOneAndUpdate({VK_ID: trade.VK_ID},{ Gold: trade.Gold + money}).exec();
     await bot.sendMessage(trade.VK_ID, `🏹 Вам поступил перевод ${money} злата, от игрока [id${user.VK_ID}|${user.Name}]\nВсего: ${trade.Gold+money} злата`);
     await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - money }).exec();
     await ctx.reply(`🏹 Вы успешно перевели злата ${money}, игроку [id${trade.VK_ID}|${trade.Name}]\nОстаток: ${user.Gold - money} злата`, null, TrueKeyBoard);
