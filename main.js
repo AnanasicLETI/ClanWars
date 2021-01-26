@@ -22,7 +22,6 @@ const userScheme = new Schema({
     Gems: Number, // Кристаллов
     TownHall: Number, // Уровень деревни
     Guardian: Number, // Стражи
-    GuardianHealth: Number, // Хп стражей
     GuardinLevel: Number, // Уровень стражей
     Camp: Number, // Тренировочный лагерь
     CampCount: Number, // Кол-во людей
@@ -49,6 +48,8 @@ const userScheme = new Schema({
     Guard: Number, // защищается
     War: Number, // Идет ли война
     Time: Number, // Время для атаки
+    Cups: Number, // Кубков
+    Wins: Number, // Побед
 }); 
 const User = mongoose.model("users", userScheme); // сама коллекция с пользователями
 
@@ -68,7 +69,6 @@ async function RegisterPlayer(ID)
         Gems: 0, 
         TownHall: 1, 
         Guardian: 5, 
-        GuardianHealth: 20, 
         GuardinLevel: 1, 
         Camp: 1, 
         CampCount: 0,  
@@ -94,8 +94,117 @@ async function RegisterPlayer(ID)
         Attack: 0,
         Guard: 0,
         War: 0,
-        Time: 0}); // Функция создания записи в базе данных
+        Time: 0,
+        Cups: 0,
+        Wins: 0}); // Функция создания записи в базе данных
 }
+// Функция бота: Команда - <Начать>, lower = True
+bot.command('начать', async (ctx) => {
+
+    // Клавиатура для бота
+    let TrueKeyBoard = null;
+    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
+
+    if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
+    {
+        if (ctx.message.from_id == ctx.message.peer_id) // Проверка на ввод сообщение на прямую боту
+        {
+            await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
+            await ctx.reply('🏹 Привествую вас!\nВ данной игре вы являетесь вождем деревни.\nУлучшайте деревню, атакуйте других чтобы выжить!\n\nПросмотр команд: Команды', null, TrueKeyBoard);
+        }
+        else return true;
+    }
+    else await ctx.reply('🏹 Что вы хотите начать?', null, TrueKeyBoard);
+});
+// Функция бота: Команда - <Команды>, lower = True
+bot.command('команды', async (ctx) => {
+
+    // Клавиатура для бота
+    let TrueKeyBoard = null;
+    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
+
+    if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
+    {
+        if (ctx.message.from_id == ctx.message.peer_id) // Проверка на ввод сообщение на прямую боту
+            await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
+        else return true;
+    }
+    await ctx.reply('🔎 Основные команды:\n\n\
+    ⛪ Деревня - статистика деревни\n\
+    🎪 Лагерь - в лагере находятся бойцы\n\
+    🗿 Тренировать - тренировка бойцов\n\n\
+    💈 Лаборатория - просмотр лабораториn\n\
+    🥼 Улучшить - улучшение чего либо\n\n\
+    🏹 Магазин - просмотр и покупка предметов\n\n\
+    ⚔ Атаковать - поиск и атака врага\n\
+    ❌ Отмена - отменить поиск врага\n\n\
+    🕶 Ник <Имя> - смена ника\n\
+    💸 Передать <ID> <кол-во> - передача злата игроку', null, TrueKeyBoard);
+});
+// Функция бота: Команда - <Передать>, lower = True
+bot.command('передать', async (ctx) => {
+
+    // Клавиатура для бота
+    let TrueKeyBoard = null;
+    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
+
+    if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
+    {
+        if (ctx.message.from_id == ctx.message.peer_id) // Проверка на ввод сообщение на прямую боту
+            await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
+        else return true;
+    }
+    const user = await User.findOne({VK_ID: ctx.message.from_id}).exec();
+    if(user.War != 0)
+        return await ctx.reply(` 🏹 Вы находитесь в бою/обороне...`, null, TrueKeyBoard);
+    const args = ctx.message.text.split(' ');
+    if(!args[1] || !args[2])
+        return await ctx.reply('🏹 Используйте: Передать <ID> <сумма>', null, TrueKeyBoard);
+    const tradeID = parseInt(args[1]);
+    const money = parseInt(args[2]);
+    if(money <= 20)
+        return await ctx.reply('🏹 Сумма перевода недолжна быть меньше 20 злата..', null, TrueKeyBoard);
+
+    if(user.ID == tradeID)
+        return await ctx.reply('🏹 Самому себе нельзя..', null, TrueKeyBoard);
+
+    if (!await User.findOne({ID: tradeID}).exec()) // Проверка регистрации
+        return await ctx.reply('🏹 Данного пользователя не существует..', null, TrueKeyBoard);
+
+    if(user.Gold < money)
+        return await ctx.reply('🏹 У вас недостаточно средств для перевода..', null, TrueKeyBoard);
+
+    const trade = await User.findOne({ID: tradeID}).exec();
+    await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - money }).exec();
+    await ctx.reply(`🏹 Вы успешно перевели злата ${money}, игроку [id${trade.VK_ID}|${trade.Name}]\nОстаток: ${user.Gold - money} злата`, null, TrueKeyBoard);
+    await User.findOneAndUpdate({VK_ID: trade.VK_ID},{ Gold: user.trade + money}).exec();
+    await bot.sendMessage(trade.VK_ID, `🏹 Вам поступил перевод ${money} злата, от игрока [id${user.VK_ID}|${user.Name}]\nВсего: ${trade.Gold+money} злата`);
+});
+// Функция бота: Команда - <Ник>, lower = True
+bot.command('ник', async (ctx) => {
+
+    // Клавиатура для бота
+    let TrueKeyBoard = null;
+    if (ctx.message.from_id == ctx.message.peer_id) TrueKeyBoard = MainKeyBoard;
+
+    if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
+    {
+        if (ctx.message.from_id == ctx.message.peer_id) // Проверка на ввод сообщение на прямую боту
+            await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
+        else return true;
+    }
+    const user = await User.findOne({VK_ID: ctx.message.from_id}).exec();
+    if(user.War != 0)
+        return await ctx.reply(` 🏹 Вы находитесь в бою/обороне...`, null, TrueKeyBoard);
+    const args = ctx.message.text.split(' ');
+    if(!args[1])
+        return await ctx.reply('🏹 Используйте: Ник <имя>', null, TrueKeyBoard);
+    if(args[1].length < 5 || args[1].length > 15)
+        return await ctx.reply('🏹 Длина ника не должна быть меньше 5 или больше 15..', null, TrueKeyBoard);
+
+    await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Name: args[1] }).exec();
+    await ctx.reply(`🏹 Вы успешно сменили имя на ${args[1]}`, null, TrueKeyBoard);
+});
 // Функция бота: Команда - <Деревня>, lower = True
 bot.command('деревня', async (ctx) => {
 
@@ -110,6 +219,8 @@ bot.command('деревня', async (ctx) => {
         else return true;
     }
     const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
+    if(user.War != 0)
+        return await ctx.reply(` 🏹 Вы находитесь в бою/обороне...`, null, TrueKeyBoard);
     let messageKings = "";
     if(user.KingGoblin)
         messageKings += `🧝 Король гоблинов: ${user.KingGoblin} уровень.\n- Здоровье короля: ${user.KingGoblinHealth}/${user.KingGoblin*50}`;
@@ -117,13 +228,14 @@ bot.command('деревня', async (ctx) => {
         messageKings += `🧙 Хранитель злата: ${user.TheKeeper} уровень\n- Хранитель злата сохраняет ${user.TheKeeper*2}% от воровонного злата`;
     await ctx.reply(` ⛪ ${user.Name}, ваша деревня:\n\n\
     📌 Персональный ID: ${user.ID}\n\
-    🕍 Главное здание: ${user.TownHall} уровень.\n\
+    🕍 Ратуша: ${user.TownHall} уровень.\n\
     💰 Состояние хранилища: ${user.Gold} золота.\n\n\
     💂 Стражей деревни: ${user.Guardian} людей.\n\
-    ♥ Здоровье стражей: ${user.GuardianHealth}/${user.TownHall*20} HP\n\
     🛡 Пушки: ${user.Cannons}/${user.TownHall*2} | Уровень: ${user.CannonsLevel}
     🏹 Башня с лучниками: ${user.Tower}/${user.TownHall*3} | Уровень: ${user.TowerLevel}\n\
-    ${messageKings}`, null, TrueKeyBoard);
+    ${messageKings}\n\n\
+    🏆 Кубков: ${user.Cups}\n\
+    👑 Побед: ${user.Wins}`, null, TrueKeyBoard);
 });
 // Функция бота: Команда - <Лагерь>, lower = True
 bot.command('лагерь', async (ctx) => {
@@ -139,6 +251,8 @@ bot.command('лагерь', async (ctx) => {
         else return true;
     }
     const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
+    if(user.War != 0)
+        return await ctx.reply(` 🏹 Вы находитесь в бою/обороне...`, null, TrueKeyBoard);
     let messageCamp = "⚔ Бойцы:\n";
     if(user.Vikings + user.Goblins + user.Dragons + user.Pekka == 0)
         messageCamp = "В тренировочном лагере пусто..\nДля тренировки ваших бойцов\n- Тренировать <кого тренировать> <кол-во>";
@@ -175,6 +289,8 @@ bot.command('тренировать', async (ctx) => {
         else return true;
     }
     const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
+    if(user.War != 0)
+        return await ctx.reply(` 🏹 Вы находитесь в бою/обороне...`, null, TrueKeyBoard);
     const args = ctx.message.text.split(' ');
     if(!args[1] || !args[2])
         return await ctx.reply(` 🏹 Используйте: Тренировать <название бойца> <кол-во>\n\
@@ -257,6 +373,9 @@ bot.command('лаборатория', async (ctx) => {
     }
     let messageLaboratory = '⚔ Доступны к прокачке:\n';
     const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
+    if(user.War != 0)
+        return await ctx.reply(` 🏹 Вы находитесь в бою/обороне...`, null, TrueKeyBoard);
+
     if(user.VikingLevel != user.Laboratory + 1)
         messageLaboratory += `🦸‍♂️ Викинг: доступно к улучшению\n- Стоимость улучшения: ${user.VikingLevel*100} злата\n`;
     
@@ -292,9 +411,25 @@ bot.command('улучшить', async (ctx) => {
         else return true;
     }
     const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
+    if(user.War != 0)
+        return await ctx.reply(` 🏹 Вы находитесь в бою/обороне...`, null, TrueKeyBoard);
     const args = ctx.message.text.split(' ');
     if(!args[1])
-        return await ctx.reply(` 🏹 Используйте: Улучшить <что улучшить>\n`, null, TrueKeyBoard);
+        return await ctx.reply(` 🏹 С помощью улучшений можно повысить уровень:\n\
+        ⛪ Ратуша - стоимость ${user.TownHall*500} злата\n\
+        💈 Лаборатория - стоимость ${user.Camp*200} злата\n\
+        🎪 Лагерь - стоимость ${user.Laboratory*300} злата\n\n\
+        🛡 Пушка - стоимость ${user.CannonsLevel*100} злата\n\
+        🏹 Башня - стоимость ${user.TowerLevel*100} злата\n\
+        💂 Стражи - стоимость ${user.GuardinLevel*100} злата\n\n\
+        🦸‍♂️ Викинг - стоимость ${user.VikingLevel*100} злата\n\
+        🧟‍♂️ Гоблин - стоимость ${user.GoblinLevel*200} злата\n\
+        👹 Гигант - стоимость ${user.GigantLevel*300} злата\n\
+        👿 Дракон - стоимость ${user.DragonLevel*400} злата\n\
+        🤖 Пекка - стоимость ${user.PekkaLevel*500} злата\n\n
+        🧝 Король\n\
+        🧙 Хранитель\n\n
+        Используйте: Улучшить <что улучшить>\n`, null, TrueKeyBoard);
 
     if(args[1].toLowerCase() == 'викинг')
     {
@@ -424,6 +559,17 @@ bot.command('улучшить', async (ctx) => {
         await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.TowerLevel*100, TowerLevel: user.TowerLevel + 1 }).exec();
         return await ctx.reply(` 🏹 Улучшение башни завершено!\nСтоимость: ${user.TowerLevel*100} злата\nУровень: ${user.TowerLevel+1}`, null, TrueKeyBoard);
     }
+    else if(args[1].toLowerCase() == 'стражи')
+    {
+        if(user.Gold < user.GuardinLevel*100)
+            return await ctx.reply(' 🏹 Недостаточно средств!', null, TrueKeyBoard);
+
+        if(user.TownHall + 1 == user.GuardinLevel)
+            return await ctx.reply(' 🏹 Для улучшения башни нужно иметь ратушу выше уровня!', null, TrueKeyBoard);
+
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.GuardinLevel*100, GuardinLevel: user.GuardinLevel + 1 }).exec();
+        return await ctx.reply(` 🏹 Улучшение стражей завершено!\nСтоимость: ${user.GuardinLevel*100} злата\nУровень: ${user.GuardinLevel+1}`, null, TrueKeyBoard);
+    }
     else if(args[1].toLowerCase() == 'король')
     {
         if(user.KingGoblin == 0)
@@ -468,6 +614,8 @@ bot.command('магазин', async (ctx) => {
         else return true;
     }
     const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
+    if(user.War != 0)
+        return await ctx.reply(` 🏹 Вы находитесь в бою/обороне...`, null, TrueKeyBoard);
     const args = ctx.message.text.split(' ');
     if(!args[1] || !args[2])
         return await ctx.reply(` 🏹 Ассортимент магазина:\n\n\
@@ -556,6 +704,10 @@ bot.command('атаковать', async (ctx) => {
     const user = await User.findOne({VK_ID: ctx.message.from_id}).exec(); // Поиск пользователя и запись в переменную
     if(user.War != 0)
         return await ctx.reply(` 🏹 Вы уже находитесь в бою/обороне...`, null, TrueKeyBoard);
+
+    if(user.Vikings+user.Goblins+user.Gigants+user.Dragon+user.Pekka == 0)
+        return await ctx.reply(` 🏹 У вас не имеется армии для атаки...`, null, TrueKeyBoard);
+
     if(user.Finder != 0)
     {
         const enemy = await User.findOne({VK_ID: user.Finder}).exec(); // Поиск пользователя и запись в переменную
@@ -674,6 +826,9 @@ bot.event('message_new', async (ctx) => {
     if (!await User.findOne({VK_ID: ctx.message.from_id}).exec()) // Проверка регистрации
         if(ctx.message.from_id == ctx.message.peer_id)
             await RegisterPlayer(ctx.message.from_id); // Регистрация пользователя
+
+    if(ctx.message.from_id == ctx.message.peer_id)
+        await ctx.reply('🏹 Данной команды не существует!\nСписок команд: Команды', null, TrueKeyBoard);
 });
 async function CheckAttack()
 {
@@ -688,23 +843,30 @@ async function CheckAttack()
         if(user.Attack == 0) continue;
         const enemy = await User.findOne({VK_ID: user.Attack}).exec();
         let PowerAttack = user.Vikings*user.VikingLevel+user.GoblinLevel*user.Goblins+user.Gigants*user.GigantLevel+user.Dragons*user.DragonLevel+user.Pekka*user.PekkaLevel+user.KingGoblin-15;
-        let PowerGuard = enemy.Cannons*enemy.CannonsLevel+enemy.Tower*enemy.TowerLevel+enemy.Guardian;
+        let PowerGuard = enemy.Cannons*enemy.CannonsLevel+enemy.Tower*enemy.TowerLevel+enemy.Guardian*enemy.GuardinLevel;
 
         if(PowerAttack > PowerGuard)
         {
-            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Vikings: 0, Goblin: 0, Gigant: 0, Dragon: 0, Pekka: 0, War: 0, Finder:0, Attack: 0, Time: 0, Guard: 0, Gold: user.Gold+ enemy.Gold - enemy.Gold*40/100, CampCount: 0 }).exec();
+            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Wins: user.Wins+1,Cups: user.Cups + 30, Vikings: 0, Goblin: 0, Gigant: 0, Dragon: 0, Pekka: 0, War: 0, Finder:0, Attack: 0, Time: 0, Guard: 0, Gold: user.Gold+ enemy.Gold - enemy.Gold*40/100, CampCount: 0 }).exec();
             await bot.sendMessage(user.VK_ID, `🏹 ПОБЕДА!\n\nВаши бойцы разрушили деревню: [id${enemy.VK_ID}|${enemy.Name}]\n\nНаграда:\n💰 +${enemy.Gold - enemy.Gold*40/100}\n🏆 +30 Кубков`);
-            await User.findOneAndUpdate({VK_ID: enemy.VK_ID},{ War: 0, Finder:0, Attack: 0, Time: 0, Guard: 0, Gold: enemy.Gold - enemy.Gold*40/100 }).exec();
+            let eCups;
+            if(enemy.Cups - 30 <= 0)
+                eCups = 0;
+            else eCups = enemy.Cups - 30;
+            await User.findOneAndUpdate({VK_ID: enemy.VK_ID},{ Cups: eCups, War: 0, Finder:0, Attack: 0, Time: 0, Guard: 0, Gold: enemy.Gold - enemy.Gold*40/100 }).exec();
             await bot.sendMessage(enemy.VK_ID, `🏹 ПОРАЖЕНИЕ!\n\nВаша деревня не выдержала атаку [id${user.VK_ID}|${user.Name}]\n\nПотери:\n💰 -${enemy.Gold - enemy.Gold*40/100}\n🏆 -30 Кубков`);
         }
         else
         {
-            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Vikings: 0, Goblin: 0, Gigant: 0, Dragon: 0, Pekka: 0, War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0, CampCount: 0 }).exec();
+            let uCups;
+            if(user.Cups - 30 <= 0)
+            uCups = 0;
+            else uCups = user.Cups - 30;
+            await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Cups: uCups, Vikings: 0, Goblin: 0, Gigant: 0, Dragon: 0, Pekka: 0, War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0, CampCount: 0 }).exec();
             await bot.sendMessage(user.VK_ID, `🏹 ПОРАЖЕНИЕ!\n\nВаши бойцы не смогли разрешить деревню: [id${enemy.VK_ID}|${enemy.Name}]\n\n🏆 -30 Кубков`);
-            await User.findOneAndUpdate({VK_ID: enemy.VK_ID},{ War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0 }).exec();
+            await User.findOneAndUpdate({VK_ID: enemy.VK_ID},{ Cups: enemy.Cups+30, Wins: user.Wins + 1, War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0 }).exec();
             await bot.sendMessage(enemy.VK_ID, `🏹 ПОБЕДА!\n\nВаша деревня выдержала атаку [id${user.VK_ID}|${user.Name}]\n\n🏆 +30 Кубков`);
         }
-        console.log(`${PowerGuard} ${PowerAttack}`);
     }
 }
 bot.startPolling(); 
