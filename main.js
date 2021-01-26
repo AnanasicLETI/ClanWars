@@ -721,7 +721,7 @@ bot.command('атаковать', async (ctx) => {
         Деревня которую вы атакуете [id${user.Finder}|${enemy.Name}]\n\
         Атака будет длиться неопределенное время..`, null, TrueKeyBoard);
     }
-    await ctx.reply(` 🏹 Идёт поиск опонента...`, null, TrueAttackKeyBoard);
+    await ctx.reply(` 🏹 Идёт поиск опонента...`, null, TrueKeyBoard);
     let CountPlayers = 0;
     for(const user of await User.find().exec())
     {
@@ -774,7 +774,7 @@ bot.command('далее', async (ctx) => {
     if(user.CampCount == 0)
         return await ctx.reply(` 🏹 У вас не имеется армии для атаки...`, null, TrueKeyBoard);
 
-    await ctx.reply(` 🏹 Идёт поиск опонента...`, null, TrueAttackKeyBoard);
+    await ctx.reply(` 🏹 Идёт поиск опонента...`, null, TrueKeyBoard);
     let CountPlayers = 0;
     for(const user of await User.find().exec())
     {
