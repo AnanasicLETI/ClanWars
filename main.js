@@ -729,7 +729,7 @@ bot.command('атаковать', async (ctx) => {
     }
     const random = getRandomInt(CountPlayers);
     if(!await await User.findOne({ID: 1000+random}).exec() || user.ID == 1000+random)
-        return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueAttackKeyBoard);
+        return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueKeyBoard);
     
     const enemy = await User.findOne({ID: 1000+random}).exec(); // Поиск пользователя и запись в переменную
     await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Finder: enemy.VK_ID }).exec();
@@ -779,7 +779,7 @@ bot.command('далее', async (ctx) => {
     }
     const random = getRandomInt(CountPlayers);
     if(!await await User.findOne({ID: 1000+random}).exec() || user.ID == 1000+random)
-        return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueAttackKeyBoard);
+        return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueKeyBoard);
     
     const enemy = await User.findOne({ID: 1000+random}).exec(); // Поиск пользователя и запись в переменную
     await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Finder: enemy.VK_ID }).exec();
