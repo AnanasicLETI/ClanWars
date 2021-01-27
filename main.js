@@ -831,7 +831,9 @@ bot.command('атаковать', async (ctx) => {
     На кого нападаите: [id${enemy.VK_ID}|${enemy.Name}]\n\
     🕍 Ратуша: ${enemy.TownHall} уровень\n\
     🛡 Пушек: ${enemy.Cannons} шт.\n\
-    🏹 Башни: ${enemy.Tower} шт.\n\n\
+    🏹 Башни: ${enemy.Tower} шт.\n\
+    🕹 Тесла: ${enemy.Tesla} шт.\n\
+    💣 Бомберов: ${enemy.Bomber} шт. \n\n\
     При победе вы получите:
     🏆 Кубков +30\n\
     💰 Золота: ${enemy.Gold- enemy.Gold*40/100}\n\n\
@@ -889,7 +891,9 @@ bot.command('далее', async (ctx) => {
     На кого нападаите: [id${enemy.VK_ID}|${enemy.Name}]\n\
     🕍 Ратуша: ${enemy.TownHall} уровень\n\
     🛡 Пушек: ${enemy.Cannons} шт.\n\
-    🏹 Башни: ${enemy.Tower} шт.\n\n\
+    🏹 Башни: ${enemy.Tower} шт.\n\
+    🕹 Тесла: ${enemy.Tesla} шт.\n\
+    💣 Бомберов: ${enemy.Bomber} шт. \n\n\
     При победе вы получите:
     🏆 Кубков +30\n\
     💰 Золота: ${enemy.Gold- enemy.Gold*40/100}\n\n\
@@ -976,8 +980,8 @@ async function CheckAttack()
 
         if(user.Attack == 0) continue;
         const enemy = await User.findOne({VK_ID: user.Attack}).exec();
-        let PowerAttack = user.Vikings*user.VikingLevel+user.GoblinLevel*user.Goblins+user.Gigants*user.GigantLevel+user.Dragons*user.DragonLevel+user.Pekka*user.PekkaLevel+user.KingGoblin-15;
-        let PowerGuard = enemy.Cannons*enemy.CannonsLevel+enemy.Tower*enemy.TowerLevel+enemy.Guardian*enemy.GuardinLevel+user.Tesla*user.TeslaLevel+user.Bomber*user.BomberLevel;
+        let PowerAttack = user.Vikings*user.VikingLevel+user.GoblinLevel*user.Goblins+user.Gigants*user.GigantLevel+user.Dragons*user.DragonLevel+user.Pekka*user.PekkaLevel+user.KingGoblin;
+        let PowerGuard = enemy.Cannons*enemy.CannonsLevel+6+enemy.Tower*enemy.TowerLevel+enemy.Guardian*enemy.GuardinLevel+user.Tesla*user.TeslaLevel+user.Bomber*user.BomberLevel;
 
         if(PowerAttack > PowerGuard)
         {
