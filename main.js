@@ -961,10 +961,10 @@ async function CheckAttack()
     for(const check of await User.find({}))
     {
         if(check.TimeMine != 0)
-            await User.findOneAndUpdate({VK_ID: check.VK_ID},{ TimeMine: user.TimeMine - 20 }).exec();
+            await User.findOneAndUpdate({VK_ID: check.VK_ID},{ TimeMine: check.TimeMine - 20 }).exec();
 
         if(check.Shield != 0)
-            await User.findOneAndUpdate({VK_ID: check.VK_ID},{ Shield: user.Shield - 20 }).exec();
+            await User.findOneAndUpdate({VK_ID: check.VK_ID},{ Shield: check.Shield - 20 }).exec();
     }
     for(const user of await User.find({War: 1}))
     {
