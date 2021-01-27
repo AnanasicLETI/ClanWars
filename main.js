@@ -1002,7 +1002,7 @@ async function CheckAttack()
             else uCups = user.Cups - 30;
             await User.findOneAndUpdate({VK_ID: user.VK_ID},{ Cups: uCups, Vikings: 0, Goblin: 0, Gigant: 0, Dragon: 0, Pekka: 0, War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0, CampCount: 0, Shield: 0 }).exec();
             await bot.sendMessage(user.VK_ID, `🏹 ПОРАЖЕНИЕ!\n\nВаши бойцы не смогли разрешить деревню: [id${enemy.VK_ID}|${enemy.Name}]\n\n🏆 -30 Кубков`);
-            await User.findOneAndUpdate({VK_ID: enemy.VK_ID},{ Cups: enemy.Cups+30, Wins: user.Wins + 1, War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0, Shield: 3600 }).exec();
+            await User.findOneAndUpdate({VK_ID: enemy.VK_ID},{ Cups: enemy.Cups+30, Wins: user.Wins + 1, War: 0, Finder:0, Attack: 0, Guard: 0, Time: 0 }).exec();
             await bot.sendMessage(enemy.VK_ID, `🏹 ПОБЕДА!\n\nВаша деревня выдержала атаку [id${user.VK_ID}|${user.Name}]\n\n🏆 +30 Кубков`);
         }
     }
