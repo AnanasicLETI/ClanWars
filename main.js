@@ -54,7 +54,7 @@ const userScheme = new Schema({
     Time: Number, // Время для атаки
     Cups: Number, // Кубков
     Wins: Number, // Побед
-    TimeMine, Number, // Время для шахты
+    TimeMine: Number, // Время для шахты
     Shield: Number, // Щит
 }); 
 const User = mongoose.model("users", userScheme); // сама коллекция с пользователями
