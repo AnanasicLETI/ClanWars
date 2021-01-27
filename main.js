@@ -824,9 +824,9 @@ bot.command('атаковать', async (ctx) => {
         return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueKeyBoard);
     
     const enemy = await User.findOne({ID: 1000+random}).exec(); // Поиск пользователя и запись в переменную
-    await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Finder: enemy.VK_ID }).exec();
     if(enemy.Shield > 0 || enemy.War != 0)
         return await ctx.reply(` 🏹 Произошла ошибка при поиске врага!\nПовторите попытку еще раз!`, null, TrueKeyBoard);
+    await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Finder: enemy.VK_ID }).exec();
     await ctx.reply(` 🏹 ВРАГ НАЙДЕН!\n\n\
     На кого нападаите: [id${enemy.VK_ID}|${enemy.Name}]\n\
     🕍 Ратуша: ${enemy.TownHall} уровень\n\
