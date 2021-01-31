@@ -527,7 +527,7 @@ bot.command('улучшить', async (ctx) => {
         if(user.TownHall == 5)
             return await ctx.reply(' 🏹 У вас уже максимальный уровень ратуши.', null, TrueKeyBoard);
 
-        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.TownHall*500, TownHall: user.TownHall + 1, Guardian: user.Guardin + 5 }).exec();
+        await User.findOneAndUpdate({VK_ID: ctx.message.from_id},{ Gold: user.Gold - user.TownHall*500, TownHall: user.TownHall + 1, Guardian: user.Guardian + 5 }).exec();
         return await ctx.reply(` 🏹 Улучшение ратуши завершено!\nСтоимость: ${user.TownHall*500} злата\nУровень: ${user.TownHall+1}`, null, TrueKeyBoard);
     }
     else if(args[1].toLowerCase() == 'лагерь')
