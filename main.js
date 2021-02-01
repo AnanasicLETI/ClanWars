@@ -706,7 +706,7 @@ bot.command('магазин', async (ctx) => {
     }
     else if(args[1].toLowerCase() == 'король')
     {
-        if(TownHall < 3)
+        if(user.TownHall < 3)
             return await ctx.reply(' 🏹 У вас недостаточный уровень ратуши!', null, TrueKeyBoard);
 
         if(user.KingGoblin > 0)
@@ -720,7 +720,7 @@ bot.command('магазин', async (ctx) => {
     }
     else if(args[1].toLowerCase() == 'хранитель')
     {
-        if(TownHall < 5)
+        if(user.TownHall < 5)
             return await ctx.reply(' 🏹 У вас недостаточный уровень ратуши!', null, TrueKeyBoard);
 
         if(user.TheKeeper > 0)
